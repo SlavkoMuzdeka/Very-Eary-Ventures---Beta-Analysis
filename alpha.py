@@ -158,4 +158,6 @@ class Alpha:
             }
             for inst in self.insts
         }
-        return pd.DataFrame(data).T
+        df = pd.DataFrame(data).T
+        df = df.dropna()
+        return df

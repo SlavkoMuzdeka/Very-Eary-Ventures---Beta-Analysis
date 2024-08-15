@@ -1,6 +1,7 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 from typing import Optional, List
 
@@ -142,4 +143,85 @@ def show_timeseries_plot(beta_df: pd.DataFrame, tokens: List[str]):
     plt.legend()
     plt.grid(True)
 
+    return plt
+
+
+def show_pct_distribution(df: pd.DataFrame):
+    """
+    Displays a 3x3 grid where some cells are combinations of others and shows percentage distributions.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing the beta and alpha values.
+    """
+    # Define conditions for each cell
+    conditions = {
+        "1_0": (df["Beta"] < 1) & (df["Alpha"] < 0),
+        "1_1": (df["Beta"] >= 1) & (df["Alpha"] < 0),
+        "2_0": (df["Beta"] < 1) & (df["Alpha"] >= 0),
+        "2_1": (df["Beta"] >= 1) & (df["Alpha"] >= 0),
+    }
+
+    # Calculate percentage distribution for each cell
+    total_count = len(df)
+    percentages = {
+        key: 100 * len(df[condition]) / total_count
+        for key, condition in conditions.items()
+    }
+
+    percentages.update(
+        {
+            "0_0": percentages["1_0"] + percentages["2_0"],
+            "0_1": percentages["1_1"] + percentages["2_1"],
+            "1_2": percentages["1_0"] + percentages["1_1"],
+            "2_2": percentages["2_0"] + percentages["2_1"],
+        }
+    )
+
+    fig = plt.figure(figsize=(5, 5))
+    gs = gridspec.GridSpec(3, 3, width_ratios=[4, 4, 2.5], height_ratios=[2.5, 4, 4])
+
+    ax0 = plt.subplot(gs[0, 0])
+    ax1 = plt.subplot(gs[0, 1])
+    ax3 = plt.subplot(gs[1, 0])
+    ax4 = plt.subplot(gs[1, 1])
+    ax5 = plt.subplot(gs[1, 2])
+    ax6 = plt.subplot(gs[2, 0])
+    ax7 = plt.subplot(gs[2, 1])
+    ax8 = plt.subplot(gs[2, 2])
+
+    axes = [ax0, ax1, None, ax3, ax4, ax5, ax6, ax7, ax8]
+
+    labels = {
+        (0, 0): f"Beta < 1\n {percentages['0_0']:.1f}%",
+        (0, 1): f"Beta > 1\n{percentages['0_1']:.1f}%",
+        (1, 0): f"{percentages['1_0']:.1f}%",
+        (1, 1): f"{percentages['1_1']:.1f}%",
+        (1, 2): f"Alpha < 0 \n{percentages['1_2']:.1f}%",
+        (2, 0): f"{percentages['2_0']:.1f}%",
+        (2, 1): f"{percentages['2_1']:.1f}%",
+        (2, 2): f"Alpha > 0 \n{percentages['2_2']:.1f}%",
+    }
+
+    for i in range(3):
+        for j in range(3):
+            if i == 0 and j == 2:
+                break
+            ax = axes[i * 3 + j]
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
+            if (i, j) in labels:
+                ax.text(0.5, 0.5, labels[(i, j)], ha="center", va="center")
+
+    axes[3].set_ylabel("< 0", labelpad=15, rotation=0)
+    axes[6].set_ylabel("> 0", labelpad=15, rotation=0)
+
+    axes[6].set_xlabel(" < 1", labelpad=15)
+    axes[7].set_xlabel(" > 1", labelpad=15)
+
+    fig.text(0.42, 0.0, "Beta", ha="center", va="center", fontsize=14)
+    fig.text(0.0, 0.4, "Alpha", ha="center", va="center", fontsize=14)
+
+    plt.subplots_adjust(wspace=0.1, hspace=0.1)
     return plt
