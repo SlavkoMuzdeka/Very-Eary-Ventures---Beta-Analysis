@@ -16,7 +16,7 @@ def show_alpha_vs_beta(high_beta_positive_alpha: pd.DataFrame, df: pd.DataFrame)
         df (pd.DataFrame): DataFrame containing all tokens' Alpha and Beta values.
 
     Returns:
-        plt: The matplotlib plot object with the scatter plot.
+        plt.Figure: The matplotlib plot object with the scatter plot.
     """
     plt.figure(figsize=(12, 5))
     top_5_tokens = high_beta_positive_alpha.nlargest(5, "Beta")
@@ -62,7 +62,7 @@ def show_beta_distribution_box_plot(df: pd.DataFrame):
         df (pd.DataFrame): DataFrame containing Beta values for all tokens.
 
     Returns:
-        plt: The matplotlib plot object with the box and violin plots.
+        plt.Figure: The matplotlib plot object with the box and violin plots.
     """
     plt.figure(figsize=(12, 5))
 
@@ -88,7 +88,7 @@ def show_kde(df: pd.DataFrame, hue: Optional[str] = None):
         hue (Optional[str]): Optional column name in the DataFrame to use for segmentation in the KDE plot.
 
     Returns:
-        plt: The matplotlib plot object with the KDE plots.
+        plt.Figure: The matplotlib plot object with the KDE plots.
     """
     # Create a figure with two subplots
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
@@ -121,25 +121,26 @@ def show_kde(df: pd.DataFrame, hue: Optional[str] = None):
     return plt
 
 
-def show_timeseries_plot(beta_df: pd.DataFrame, tokens: List[str]):
+def show_timeseries_plot(df: pd.DataFrame, tokens: List[str], metric: str):
     """
-    Creates a timeseries plot of the Beta values for the top 5 tokens with the highest Beta over a 60-day rolling average.
+    Creates a timeseries plot of the specified metric (Alpha or Beta) values for the given tokens over a 60-day rolling average.
 
     Args:
-        df (pd.DataFrame): DataFrame containing the Beta values of all tokens.
-        beta_df (pd.DataFrame): DataFrame containing the timeseries of Beta values with a 60-day rolling average.
+        df (pd.DataFrame): DataFrame containing the timeseries of Alpha or Beta values with a 60-day rolling average.
+        tokens (List[str]): List of token symbols to be plotted.
+        metric (str): The metric to be plotted, either "Alpha" or "Beta".
 
     Returns:
-        plt: The matplotlib plot object with the timeseries plot.
+        plt.Figure: The matplotlib figure object with the timeseries plot.
     """
     plt.figure(figsize=(12, 5))
 
     for _, token in enumerate(tokens):
-        plt.plot(beta_df.index, beta_df[token], label=token)
+        plt.plot(df.index, df[token], label=token)
 
     plt.xlabel("Date")
-    plt.ylabel("Beta, 60 day Rolling Avg")
-    plt.title("Beta vs. Ether Timeseries Plot")
+    plt.ylabel(f"{metric}, 60 day Rolling Avg")
+    plt.title(f"{metric} vs. Ether Timeseries Plot")
     plt.legend()
     plt.grid(True)
 
